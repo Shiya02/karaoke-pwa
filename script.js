@@ -32,6 +32,9 @@ input.addEventListener("input", () => {
   debounceTimer = setTimeout(() => loadSuggestions(q), 200);
 });
 
+// Optional: auto-focus for mobile/desktop
+// input.focus();
+
 /* ===============================
    KEYBOARD HANDLING
 ================================ */
@@ -59,8 +62,7 @@ input.addEventListener("keydown", (e) => {
   if (e.key === "ArrowDown") {
     activeIndex = (activeIndex + 1) % suggestions.length;
   } else if (e.key === "ArrowUp") {
-    activeIndex =
-      (activeIndex - 1 + suggestions.length) % suggestions.length;
+    activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
   }
 
   renderSuggestions();
@@ -124,13 +126,15 @@ function renderSuggestions() {
 
   suggestions.forEach((text, i) => {
     const div = document.createElement("div");
-    div.className =
-      "suggestion-item" + (i === activeIndex ? " active" : "");
+    div.className = "suggestion-item" + (i === activeIndex ? " active" : "");
     div.textContent = text;
 
     div.onclick = () => selectSuggestion(text);
 
     suggestionBox.appendChild(div);
+
+    // ✅ Scroll active item into view for mobile/desktop
+    if (i === activeIndex) div.scrollIntoView({ block: "nearest" });
   });
 
   suggestionBox.style.display = "block";
@@ -138,7 +142,7 @@ function renderSuggestions() {
 }
 
 /* ===============================
-   FADE OUT DROPDOWN (SMOOTH)
+   FADE OUT DROPDOWN
 ================================ */
 function fadeOutSuggestions() {
   suggestionBox.style.opacity = "0";

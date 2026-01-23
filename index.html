@@ -2,75 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff2d55">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Karaoke</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div class="below-video">
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
 
-  <!-- 🔍 SEARCH -->
-  <div class="card section search-section">
-    <h3 class="section-title">🔍 Search Song</h3>
+<!-- ===============================
+     APP CONTAINER
+================================= -->
+<div class="app-container">
 
-    <div class="search-container">
-      <div class="input-wrap">
-        <input
-          id="search"
-          placeholder="Search karaoke song…"
-          autocomplete="off"
-        />
-
-        <!-- Clear -->
-        <button
-          id="clearSearch"
-          class="clear-btn"
-          onclick="clearSearch()"
-          aria-label="Clear search"
-        >✕</button>
-
-        <!-- Search -->
-        <button
-          class="search-btn"
-          onclick="searchSongs()"
-          aria-label="Search"
-        >🔍</button>
-      </div>
-
-      <!-- 🔽 DROPDOWN (RETAINED) -->
-      <div id="suggestions" class="suggestions"></div>
+  <!-- 🎥 VIDEO -->
+  <div class="card video-card">
+    <div class="video-wrapper">
+      <div id="player"></div>
     </div>
 
-    <!-- RESULTS (WITH ADD BUTTON) -->
-    <div id="results" class="results-scroll"></div>
+    <div class="host-controls">
+      <button class="primary" id="skipBtn" onclick="skipSong()" disabled>⏭ Skip</button>
+      <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
+    </div>
   </div>
 
-  <!-- ⏭ UP NEXT -->
-  <div class="card section">
-    <h3 class="section-title">⏭ Up Next</h3>
-    <div id="upNext" class="muted">No song queued</div>
-  </div>
+  <!-- ===============================
+       BELOW VIDEO: SEARCH & QUEUE
+  ================================= -->
+  <div class="below-video">
 
-  <!-- 📃 QUEUE -->
-  <div class="card section">
-    <h3 class="section-title">📃 Queue Songs</h3>
-    <ul id="queue"></ul>
-  </div>
+    <!-- 🔍 SEARCH -->
+    <div class="card section search-section">
+      <h3 class="section-title">🔍 Search Song</h3>
 
+      <div class="search-container">
+        <div class="input-wrap">
+          <input
+            id="search"
+            placeholder="Search karaoke song…"
+            autocomplete="off"
+          />
+          <!-- Clear -->
+          <button
+            id="clearSearch"
+            class="clear-btn"
+            onclick="clearSearch()"
+            aria-label="Clear search"
+          >✕</button>
+
+          <!-- Search -->
+          <button
+            class="search-btn"
+            onclick="searchSongs()"
+            aria-label="Search"
+          >🔍</button>
+        </div>
+
+        <!-- 🔽 DROPDOWN -->
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results" class="results-scroll"></div>
+    </div>
+
+    <!-- ⏭ UP NEXT -->
+    <div class="card section">
+      <h3 class="section-title">⏭ Up Next</h3>
+      <div id="upNext" class="muted">No song queued</div>
+    </div>
+
+    <!-- 📃 QUEUE -->
+    <div class="card section">
+      <h3 class="section-title">📃 Queue Songs</h3>
+      <ul id="queue"></ul>
+    </div>
+
+  </div>
 </div>
 
-<!-- 🎥 VIDEO -->
-<div class="card video-card">
-  <div class="video-wrapper">
-    <div id="player"></div>
-  </div>
-
-  <div class="host-controls">
-    <button class="primary" id="skipBtn" onclick="skipSong()" disabled>⏭ Skip</button>
-    <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
-  </div>
-</div>
-
+<!-- YouTube API + Script -->
 <script src="https://www.youtube.com/iframe_api"></script>
 <script src="script.js"></script>
 </body>
