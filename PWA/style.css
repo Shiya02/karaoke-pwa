@@ -1,5 +1,5 @@
 /* ===============================
-   ROOT
+   ROOT VARIABLES
 ================================ */
 :root {
   --bg: #0f0f10;
@@ -9,6 +9,7 @@
   --accent: #ff2d55;
   --text: #f5f5f7;
   --muted: #9a9aa1;
+  --gap: 12px;
 }
 
 /* ===============================
@@ -20,197 +21,47 @@ body {
   color: var(--text);
   margin: 0;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 /* ===============================
-   GRID
+   APP CONTAINER
 ================================ */
-.below-video {
-  display: grid;
-  gap: 12px;
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
 }
 
 @media (min-width: 900px) {
+  .app-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .video-card {
+    flex: 2;
+  }
+
   .below-video {
-    grid-template-columns: 2.2fr 1fr 1.3fr;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gap);
   }
 }
 
 /* ===============================
-   CARDS
+   BELOW VIDEO GRID
 ================================ */
-.card {
-  background: linear-gradient(180deg, var(--surface), #141417);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.03);
+.below-video {
+  display: grid;
+  gap: var(--gap);
 }
 
 /* ===============================
-   TOP SECTIONS
+   VIDEO RESPONSIVE
 ================================ */
-.section {
-  max-height: 140px;
-  overflow: hidden;
-}
-
-.section-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin: 0 0 8px;
-}
-
-.muted {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.search-section {
-  overflow: visible; /* 🔥 REQUIRED FOR DROPDOWN */
-}
-
-/* ===============================
-   SEARCH
-================================ */
-.search-container {
-  position: relative;
-  z-index: 20;
-}
-
-.input-wrap {
-  position: relative;
-  max-width: 420px;
-}
-
-/* INPUT */
-.input-wrap input {
-  width: 100%;
-  height: 34px;
-  padding: 0 68px 0 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-soft);
-  color: var(--text);
-  font-size: 13px;
-}
-
-/* CLEAR ✕ */
-.clear-btn {
-  position: absolute;
-  right: 38px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #2a2a30;
-  color: var(--text);
-  border: none;
-  font-size: 11px;
-  display: none;
-}
-
-.clear-btn.show {
-  display: block;
-}
-
-/* SEARCH BUTTON */
-.search-btn {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  border: none;
-  background: var(--accent);
-  color: white;
-  font-size: 13px;
-}
-
-/* ===============================
-   🔽 DROPDOWN (RETAINED)
-================================ */
-.suggestions {
-  position: absolute;
-  top: 42px;
-  left: 0;
-  max-width: 420px;
-  width: 100%;
-  background: rgba(20,20,24,0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  display: none;
-  z-index: 999;
-}
-
-.suggestion-item {
-  padding: 10px 12px;
-  font-size: 13px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-}
-
-.suggestion-item:hover,
-.suggestion-item.active {
-  background: rgba(255,255,255,0.06);
-}
-
-/* ===============================
-   RESULTS (ADD BUTTON RETAINED)
-================================ */
-.results-scroll {
-  margin-top: 8px;
-  max-height: 80px;
-  overflow-y: auto;
-}
-
-.result-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-
-/* ✅ ADD BUTTON — UNCHANGED */
-.result-item button {
-  height: 24px;
-  padding: 0 8px;
-  font-size: 11px;
-  border-radius: 8px;
-}
-
-/* ===============================
-   QUEUE
-================================ */
-#queue {
-  max-height: 90px;
-  overflow-y: auto;
-  font-size: 12px;
-}
-
-#queue li {
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ===============================
-   VIDEO (BIG)
-================================ */
-.video-card {
-  margin-top: 14px;
-}
-
 .video-wrapper {
   position: relative;
   width: 100%;
@@ -234,11 +85,142 @@ body {
 }
 
 /* ===============================
-   CONTROLS
+   SEARCH & INPUT
+================================ */
+.search-container {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrap {
+  position: relative; /* ✅ needed for absolute buttons */
+  width: 100%;
+  max-width: 100%;
+}
+
+.input-wrap input {
+  width: 100%;
+  height: 40px;
+  padding-left: 12px;
+  padding-right: 100px; /* enough space for clear + search buttons */
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.clear-btn {
+  position: absolute;
+  top: 50%;
+  right: 36px; /* distance from right edge of input */
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  border-radius: 50%;
+  border: none;
+  background: #2a2a30;
+  color: var(--text);
+  cursor: pointer;
+  display: none;
+}
+
+.clear-btn.show {
+  display: block;
+}
+
+.search-btn {
+  position: absolute;
+  top: 50%;
+  right: 6px; /* distance from right edge of input */
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ===============================
+   DROPDOWN SUGGESTIONS
+================================ */
+.suggestions {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  background: rgba(20,20,24,0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: none;
+  z-index: 999;
+}
+ 
+ 
+.suggestion-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: rgba(255,255,255,0.06);
+}
+/* ===============================
+   RESULTS & QUEUE
+================================ */
+.results-scroll {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.result-item button {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+  border-radius: 8px;
+}
+
+#queue {
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 12px;
+}
+
+#queue li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===============================
+   HOST CONTROLS
 ================================ */
 .host-controls {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -248,6 +230,8 @@ button.primary {
   border: none;
   border-radius: 12px;
   padding: 10px 14px;
+  flex: 1 1 auto;
+  min-width: 120px;
 }
 
 button.ghost {
@@ -256,8 +240,41 @@ button.ghost {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 10px 14px;
+  flex: 1 1 auto;
+  min-width: 120px;
 }
 
 button:disabled {
   opacity: 0.5;
+}
+
+/* ===============================
+   CARDS & SECTIONS
+================================ */
+.card {
+  background: linear-gradient(180deg, var(--surface), #141417);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4),
+              inset 0 1px 0 rgba(255,255,255,0.03);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section {
+  max-height: none;
+  overflow: visible;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+@media (min-width: 900px) {
+  .section-title {
+    font-size: 16px;
+  }
 }
