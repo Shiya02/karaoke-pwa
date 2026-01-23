@@ -40,39 +40,41 @@ if ("serviceWorker" in navigator) {
   <div class="below-video">
 
     <!-- 🔍 SEARCH -->
-    <div class="card section search-section">
-      <h3 class="section-title">🔍 Search Song</h3>
+<!-- 🔍 SEARCH -->
+  <div class="card section search-section">
+    <h3 class="section-title">🔍 Search Song</h3>
 
-      <div class="search-container">
-        <div class="input-wrap">
-          <input
-            id="search"
-            placeholder="Search karaoke song…"
-            autocomplete="off"
-          />
-          <!-- Clear -->
-          <button
-            id="clearSearch"
-            class="clear-btn"
-            onclick="clearSearch()"
-            aria-label="Clear search"
-          >✕</button>
+    <div class="search-container">
+      <div class="input-wrap">
+        <input
+          id="search"
+          placeholder="Search karaoke song…"
+          autocomplete="off"
+        />
 
-          <!-- Search -->
-          <button
-            class="search-btn"
-            onclick="searchSongs()"
-            aria-label="Search"
-          >🔍</button>
-        </div>
+        <!-- Clear -->
+        <button
+          id="clearSearch"
+          class="clear-btn"
+          onclick="clearSearch()"
+          aria-label="Clear search"
+        >✕</button>
 
-        <!-- 🔽 DROPDOWN -->
-        <div id="suggestions" class="suggestions"></div>
+        <!-- Search -->
+        <button
+          class="search-btn"
+          onclick="searchSongs()"
+          aria-label="Search"
+        >🔍</button>
       </div>
 
-      <!-- RESULTS -->
-      <div id="results" class="results-scroll"></div>
+      <!-- Dropdown suggestions -->
+      <div id="suggestions" class="suggestions"></div>
     </div>
+
+    <!-- Results -->
+    <div id="results" class="results-scroll"></div>
+  </div>
 
     <!-- ⏭ UP NEXT -->
     <div class="card section">

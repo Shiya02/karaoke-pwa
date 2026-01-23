@@ -87,8 +87,13 @@ body {
 /* ===============================
    SEARCH & INPUT
 ================================ */
-.input-wrap {
+.search-container {
   position: relative;
+  width: 100%;
+}
+
+.input-wrap {
+  position: relative; /* ✅ needed for absolute buttons */
   width: 100%;
   max-width: 100%;
 }
@@ -97,7 +102,7 @@ body {
   width: 100%;
   height: 40px;
   padding-left: 12px;
-  padding-right: 90px; /* space for clear + search buttons */
+  padding-right: 100px; /* enough space for clear + search buttons */
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface-soft);
@@ -109,7 +114,7 @@ body {
 .clear-btn {
   position: absolute;
   top: 50%;
-  right: 36px;
+  right: 36px; /* distance from right edge of input */
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
@@ -118,6 +123,7 @@ body {
   border: none;
   background: #2a2a30;
   color: var(--text);
+  cursor: pointer;
   display: none;
 }
 
@@ -128,7 +134,7 @@ body {
 .search-btn {
   position: absolute;
   top: 50%;
-  right: 6px;
+  right: 6px; /* distance from right edge of input */
   transform: translateY(-50%);
   width: 28px;
   height: 28px;
@@ -169,7 +175,6 @@ body {
 .suggestion-item.active {
   background: rgba(255,255,255,0.06);
 }
-
 /* ===============================
    RESULTS & QUEUE
 ================================ */
