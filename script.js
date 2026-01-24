@@ -6,6 +6,7 @@ const API_KEY = "AIzaSyCSggH0GxbXpv4gxqWiWl3YEb3arkBaRXI";
 let player = null;
 let playerInitializing = false;
 let currentVideo = null;
+let currentTitle = "";
 let queue = [];
 
 let suggestions = [];
@@ -95,7 +96,18 @@ document.addEventListener("click", (e) => {
 });
 
 /* ===============================
-   CLEAR SEARCH
+   ❌ CLEAR INPUT ONLY (FIX)
+================================ */
+function clearInputOnly() {
+  input.value = "";
+  clearBtn.classList.remove("show");
+  fadeOutSuggestions();
+  document.getElementById("results").innerHTML = "";
+  // ✅ does NOT touch player or queue
+}
+
+/* ===============================
+   🧹 FULL RESET (OPTIONAL)
 ================================ */
 function clearSearch() {
   input.value = "";
@@ -103,18 +115,15 @@ function clearSearch() {
   fadeOutSuggestions();
   document.getElementById("results").innerHTML = "";
 
-  // ✅ RESET PLAYER STATE
   currentVideo = null;
+  currentTitle = "";
   queue = [];
   updateQueue();
   updateUpNext();
 
-  if (player) {
-    player.stopVideo();
-  }
+  if (player) player.stopVideo();
   document.getElementById("skipBtn").disabled = true;
 }
- 
 
 /* ===============================
    JSONP SUGGESTIONS
@@ -227,10 +236,7 @@ function showResults(videos) {
   results.innerHTML = "";
   if (!videos.length) return;
 
-  playOrQueue(
-    videos[0].id.videoId,
-    truncate(videos[0].snippet.title)
-  );
+  playOrQueue(videos[0].id.videoId, videos[0].snippet.title);
 
   videos.slice(1).forEach(v => {
     const row = document.createElement("div");
@@ -241,7 +247,7 @@ function showResults(videos) {
     const btn = document.createElement("button");
     btn.textContent = "Add";
     btn.onclick = () =>
-      playOrQueue(v.id.videoId, truncate(v.snippet.title));
+      playOrQueue(v.id.videoId, v.snippet.title);
 
     row.appendChild(btn);
     results.appendChild(row);
@@ -277,10 +283,16 @@ function ensurePlayerReady(cb) {
   }, 400);
 }
 
+/* ===============================
+   PLAY / QUEUE
+================================ */
 function playOrQueue(videoId, title) {
+  title = truncate(title);
+
   ensurePlayerReady(() => {
     if (!currentVideo) {
       currentVideo = videoId;
+      currentTitle = title;
       player.loadVideoById(videoId);
       document.getElementById("skipBtn").disabled = false;
     } else {
@@ -298,6 +310,7 @@ function onPlayerStateChange(e) {
 function playNext() {
   if (!queue.length) {
     currentVideo = null;
+    currentTitle = "";
     document.getElementById("skipBtn").disabled = true;
     updateUpNext();
     return;
@@ -305,6 +318,7 @@ function playNext() {
 
   const next = queue.shift();
   currentVideo = next.videoId;
+  currentTitle = next.title;
   player.loadVideoById(next.videoId);
   updateQueue();
   updateUpNext();
