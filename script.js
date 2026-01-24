@@ -14,6 +14,7 @@ let activeIndex = -1;
 let debounceTimer = null;
 let isTyping = false;
 
+
 /* ===============================
    ELEMENTS
 ================================ */
@@ -21,6 +22,8 @@ const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
 const voiceBtn = document.getElementById("voiceBtn");
+const playPauseBtn = document.getElementById("playPauseBtn");
+
 
 let recognition; // 🔑 Make recognition accessible globally
 
@@ -45,6 +48,42 @@ input.addEventListener("input", () => {
 
   debounceTimer = setTimeout(() => loadSuggestions(q), 200);
 });
+
+
+
+playPauseBtn.addEventListener("click", () => {
+  if (!player) return;
+
+  const state = player.getPlayerState();
+  // YT.PlayerState.PLAYING === 1, PAUSED === 2
+  if (state === 1) { 
+    player.pauseVideo();
+    playPauseBtn.textContent = "▶️"; // show play icon
+  } else {
+    player.playVideo();
+    playPauseBtn.textContent = "⏸"; // show pause icon
+  }
+});
+
+// Optional: update button automatically when video ends or loads
+function updatePlayPauseBtn() {
+  if (!player) return;
+  const state = player.getPlayerState();
+  if (state === 1) {
+    playPauseBtn.textContent = "⏸";
+  } else {
+    playPauseBtn.textContent = "▶️";
+  }
+}
+
+// Listen for state changes to sync button
+function onPlayerStateChange(e) {
+  if (e.data === YT.PlayerState.ENDED) {
+    playNext();
+  }
+  updatePlayPauseBtn();
+}
+
 
 /* ===============================
    KEYBOARD HANDLING
