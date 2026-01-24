@@ -93,16 +93,17 @@ body {
 }
 
 .input-wrap {
-  position: relative; /* ✅ needed for absolute buttons */
+  position: relative;
   width: 100%;
   max-width: 100%;
+  display: flex; /* to align input + buttons */
+  align-items: center;
 }
 
 .input-wrap input {
-  width: 100%;
+  flex: 1;
   height: 40px;
-  padding-left: 12px;
-  padding-right: 100px; /* enough space for clear + search buttons */
+  padding: 0 110px 0 12px; /* leave space for 3 buttons: clear, search, voice */
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface-soft);
@@ -111,10 +112,11 @@ body {
   box-sizing: border-box;
 }
 
+/* Clear button */
 .clear-btn {
   position: absolute;
   top: 50%;
-  right: 36px; /* distance from right edge of input */
+  right: 80px; /* space for search + voice */
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
@@ -126,15 +128,15 @@ body {
   cursor: pointer;
   display: none;
 }
-
 .clear-btn.show {
   display: block;
 }
 
+/* Search button */
 .search-btn {
   position: absolute;
   top: 50%;
-  right: 6px; /* distance from right edge of input */
+  right: 44px; /* next to voice button */
   transform: translateY(-50%);
   width: 28px;
   height: 28px;
@@ -143,6 +145,22 @@ body {
   background: var(--accent);
   color: #fff;
   font-size: 13px;
+  cursor: pointer;
+}
+
+/* Voice button */
+.voice-btn {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: #2a2a30;
+  color: #fff;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -175,6 +193,7 @@ body {
 .suggestion-item.active {
   background: rgba(255,255,255,0.06);
 }
+
 /* ===============================
    RESULTS & QUEUE
 ================================ */

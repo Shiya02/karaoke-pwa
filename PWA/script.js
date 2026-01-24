@@ -20,6 +20,7 @@ let isTyping = false;
 const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
+const voiceBtn = document.getElementById("voiceBtn");
 
 /* ===============================
    HELPERS
@@ -29,11 +30,10 @@ function truncate(text, max = 35) {
 }
 
 /* ===============================
-   INPUT
+   INPUT EVENTS
 ================================ */
 input.addEventListener("input", () => {
   clearTimeout(debounceTimer);
-
   const q = input.value.trim();
   activeIndex = -1;
   isTyping = true;
@@ -76,38 +76,76 @@ input.addEventListener("keydown", (e) => {
   if (e.key === "ArrowDown") {
     activeIndex = (activeIndex + 1) % suggestions.length;
   } else if (e.key === "ArrowUp") {
-    activeIndex =
-      (activeIndex - 1 + suggestions.length) % suggestions.length;
+    activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
   }
 
   renderSuggestions();
 });
 
 /* ===============================
-   CLOSE DROPDOWN
+   CLOSE DROPDOWN ON OUTSIDE CLICK
 ================================ */
 document.addEventListener("click", (e) => {
-  if (
-    !e.target.closest(".search-container") &&
-    suggestionBox.style.display === "block"
-  ) {
+  if (!e.target.closest(".search-container") && suggestionBox.style.display === "block") {
     fadeOutSuggestions();
   }
 });
 
 /* ===============================
-   ❌ CLEAR INPUT ONLY (FIX)
+   VOICE SEARCH
+================================ */
+if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  voiceBtn.addEventListener("click", () => {
+    recognition.start();
+    voiceBtn.textContent = "🎤 Listening...";
+  });
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    if (!transcript) {
+      voiceBtn.textContent = "🎤";
+      return;
+    }
+
+    input.value = transcript;
+    voiceBtn.textContent = "🎤";
+
+    // Small delay to allow suggestions fade
+    setTimeout(() => searchSongs(), 100);
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    voiceBtn.textContent = "🎤";
+  };
+
+  recognition.onend = () => {
+    voiceBtn.textContent = "🎤";
+  };
+} else {
+  voiceBtn.disabled = true;
+  voiceBtn.title = "Voice search not supported on this device";
+}
+
+/* ===============================
+   CLEAR INPUT ONLY
 ================================ */
 function clearInputOnly() {
   input.value = "";
   clearBtn.classList.remove("show");
   fadeOutSuggestions();
   document.getElementById("results").innerHTML = "";
-  // ✅ does NOT touch player or queue
+  // ✅ queue and current song stay intact
 }
 
 /* ===============================
-   🧹 FULL RESET (OPTIONAL)
+   FULL RESET
 ================================ */
 function clearSearch() {
   input.value = "";
@@ -126,7 +164,7 @@ function clearSearch() {
 }
 
 /* ===============================
-   JSONP SUGGESTIONS
+   SUGGESTIONS
 ================================ */
 function loadSuggestions(query) {
   const old = document.getElementById("jsonp");
@@ -134,10 +172,7 @@ function loadSuggestions(query) {
 
   const s = document.createElement("script");
   s.id = "jsonp";
-  s.src =
-    "https://suggestqueries.google.com/complete/search" +
-    "?client=youtube&ds=yt&callback=handleSuggestions&q=" +
-    encodeURIComponent(query);
+  s.src = "https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&callback=handleSuggestions&q=" + encodeURIComponent(query);
 
   document.body.appendChild(s);
 }
@@ -145,28 +180,17 @@ function loadSuggestions(query) {
 window.handleSuggestions = function (data) {
   if (!isTyping) return;
 
-  suggestions = (data[1] || [])
-    .map(i => (Array.isArray(i) ? i[0] : i))
-    .slice(0, 7);
-
+  suggestions = (data[1] || []).map(i => (Array.isArray(i) ? i[0] : i)).slice(0, 7);
   renderSuggestions();
 };
 
-/* ===============================
-   RENDER SUGGESTIONS
-================================ */
 function renderSuggestions() {
   suggestionBox.innerHTML = "";
-
-  if (!suggestions.length) {
-    fadeOutSuggestions();
-    return;
-  }
+  if (!suggestions.length) return fadeOutSuggestions();
 
   suggestions.forEach((text, i) => {
     const div = document.createElement("div");
-    div.className =
-      "suggestion-item" + (i === activeIndex ? " active" : "");
+    div.className = "suggestion-item" + (i === activeIndex ? " active" : "");
     div.textContent = text;
     div.onclick = () => selectSuggestion(text);
     suggestionBox.appendChild(div);
@@ -176,9 +200,6 @@ function renderSuggestions() {
   suggestionBox.style.opacity = "1";
 }
 
-/* ===============================
-   FADE OUT
-================================ */
 function fadeOutSuggestions() {
   if (suggestionBox.style.display !== "block") return;
 
@@ -192,9 +213,6 @@ function fadeOutSuggestions() {
   }, 150);
 }
 
-/* ===============================
-   SELECT SUGGESTION
-================================ */
 function selectSuggestion(text) {
   isTyping = false;
   input.value = text;
@@ -205,7 +223,7 @@ function selectSuggestion(text) {
 }
 
 /* ===============================
-   SEARCH
+   SEARCH SONGS
 ================================ */
 function searchSongs() {
   const text = input.value.trim();
@@ -215,39 +233,32 @@ function searchSongs() {
   fadeOutSuggestions();
   input.blur();
 
-  const query = text.toLowerCase().includes("karaoke")
-    ? text
-    : text + " karaoke";
+  const query = text.toLowerCase().includes("karaoke") ? text : text + " karaoke";
 
-  fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=5&q=${encodeURIComponent(
-      query
-    )}&key=${API_KEY}`
-  )
+  fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=5&q=${encodeURIComponent(query)}&key=${API_KEY}`)
     .then(res => res.json())
     .then(data => showResults(data.items || []));
 }
 
 /* ===============================
-   RESULTS
+   SHOW RESULTS
 ================================ */
 function showResults(videos) {
   const results = document.getElementById("results");
   results.innerHTML = "";
   if (!videos.length) return;
 
+  // Auto-play first video
   playOrQueue(videos[0].id.videoId, videos[0].snippet.title);
 
   videos.slice(1).forEach(v => {
     const row = document.createElement("div");
     row.className = "result-item";
-
     row.innerHTML = `<span>${truncate(v.snippet.title)}</span>`;
 
     const btn = document.createElement("button");
     btn.textContent = "Add";
-    btn.onclick = () =>
-      playOrQueue(v.id.videoId, v.snippet.title);
+    btn.onclick = () => playOrQueue(v.id.videoId, v.snippet.title);
 
     row.appendChild(btn);
     results.appendChild(row);
@@ -260,13 +271,8 @@ function showResults(videos) {
 function ensurePlayerReady(cb) {
   if (player && window.YT && YT.Player) return cb();
 
-  if (playerInitializing) {
-    return setTimeout(() => ensurePlayerReady(cb), 200);
-  }
-
-  if (!window.YT || !YT.Player) {
-    return setTimeout(() => ensurePlayerReady(cb), 300);
-  }
+  if (playerInitializing) return setTimeout(() => ensurePlayerReady(cb), 200);
+  if (!window.YT || !YT.Player) return setTimeout(() => ensurePlayerReady(cb), 300);
 
   playerInitializing = true;
 
@@ -287,16 +293,16 @@ function ensurePlayerReady(cb) {
    PLAY / QUEUE
 ================================ */
 function playOrQueue(videoId, title) {
-  title = truncate(title);
+  const shortTitle = truncate(title);
 
   ensurePlayerReady(() => {
     if (!currentVideo) {
       currentVideo = videoId;
-      currentTitle = title;
+      currentTitle = shortTitle;
       player.loadVideoById(videoId);
       document.getElementById("skipBtn").disabled = false;
     } else {
-      queue.push({ videoId, title });
+      queue.push({ videoId, title: shortTitle });
       updateQueue();
     }
     updateUpNext();
@@ -330,7 +336,6 @@ function playNext() {
 function updateQueue() {
   const ul = document.getElementById("queue");
   ul.innerHTML = "";
-
   queue.forEach(q => {
     const li = document.createElement("li");
     li.textContent = q.title;
