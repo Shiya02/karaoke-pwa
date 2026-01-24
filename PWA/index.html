@@ -32,6 +32,12 @@ if ("serviceWorker" in navigator) {
       <button class="primary" id="skipBtn" onclick="skipSong()">⏭ Skip</button>
       <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
     </div>
+
+        <!-- ⏭ UP NEXT -->
+    <div class="card section">
+      <h3 class="section-title-upnext">⏭ Up Next</h3>
+      <div id="upNext" class="muted">No song queued</div>
+    </div>
   </div>
 
   <!-- ===============================
@@ -83,15 +89,11 @@ if ("serviceWorker" in navigator) {
 </div>
 
 
-    <!-- ⏭ UP NEXT -->
-    <div class="card section">
-      <h3 class="section-title">⏭ Up Next</h3>
-      <div id="upNext" class="muted">No song queued</div>
-    </div>
+
 
     <!-- 📃 QUEUE -->
     <div class="card section">
-      <h3 class="section-title">📃 Queue Songs</h3>
+      <h3 class="section-title-Queue">📃 Queue Songs</h3>
       <ul id="queue"></ul>
     </div>
 
