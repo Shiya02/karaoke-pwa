@@ -1,4 +1,4 @@
-const API_KEY = "AIzaSyCSggH0GxbXpv4gxqWiWl3YEb3arkBaRXI";
+const API_KEY = "AIzaSyCHV9kOJtGk54zmDeJRWIwv0FstrnYz70Y";
 
 /* ===============================
    STATE
@@ -22,6 +22,8 @@ const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
 const voiceBtn = document.getElementById("voiceBtn");
 
+let recognition; // 🔑 Make recognition accessible globally
+
 /* ===============================
    HELPERS
 ================================ */
@@ -37,13 +39,9 @@ input.addEventListener("input", () => {
   const q = input.value.trim();
   activeIndex = -1;
   isTyping = true;
-
   clearBtn.classList.toggle("show", q.length > 0);
 
-  if (!q) {
-    fadeOutSuggestions();
-    return;
-  }
+  if (!q) return fadeOutSuggestions();
 
   debounceTimer = setTimeout(() => loadSuggestions(q), 200);
 });
@@ -52,16 +50,12 @@ input.addEventListener("input", () => {
    KEYBOARD HANDLING
 ================================ */
 input.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    fadeOutSuggestions();
-    return;
-  }
+  if (e.key === "Escape") return fadeOutSuggestions();
 
   if (e.key === "Enter") {
     e.preventDefault();
     isTyping = false;
     fadeOutSuggestions();
-    input.blur();
 
     if (activeIndex >= 0 && suggestions[activeIndex]) {
       selectSuggestion(suggestions[activeIndex]);
@@ -73,11 +67,8 @@ input.addEventListener("keydown", (e) => {
 
   if (!suggestions.length) return;
 
-  if (e.key === "ArrowDown") {
-    activeIndex = (activeIndex + 1) % suggestions.length;
-  } else if (e.key === "ArrowUp") {
-    activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
-  }
+  if (e.key === "ArrowDown") activeIndex = (activeIndex + 1) % suggestions.length;
+  if (e.key === "ArrowUp") activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
 
   renderSuggestions();
 });
@@ -96,7 +87,7 @@ document.addEventListener("click", (e) => {
 ================================ */
 if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
+  recognition = new SpeechRecognition();
   recognition.lang = "en-US";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
@@ -114,9 +105,9 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
     }
 
     input.value = transcript;
-    voiceBtn.textContent = "🎤";
+    clearBtn.classList.add("show");
 
-    // Small delay to allow suggestions fade
+    // ✅ Slight delay to ensure input updates before search
     setTimeout(() => searchSongs(), 100);
   };
 
@@ -141,7 +132,6 @@ function clearInputOnly() {
   clearBtn.classList.remove("show");
   fadeOutSuggestions();
   document.getElementById("results").innerHTML = "";
-  // ✅ queue and current song stay intact
 }
 
 /* ===============================
@@ -172,15 +162,14 @@ function loadSuggestions(query) {
 
   const s = document.createElement("script");
   s.id = "jsonp";
-  s.src = "https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&callback=handleSuggestions&q=" + encodeURIComponent(query);
+  s.src = `https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&callback=handleSuggestions&q=${encodeURIComponent(query)}`;
 
   document.body.appendChild(s);
 }
 
 window.handleSuggestions = function (data) {
   if (!isTyping) return;
-
-  suggestions = (data[1] || []).map(i => (Array.isArray(i) ? i[0] : i)).slice(0, 7);
+  suggestions = (data[1] || []).map(i => Array.isArray(i) ? i[0] : i).slice(0, 7);
   renderSuggestions();
 };
 
@@ -204,7 +193,6 @@ function fadeOutSuggestions() {
   if (suggestionBox.style.display !== "block") return;
 
   suggestionBox.style.opacity = "0";
-
   setTimeout(() => {
     suggestionBox.style.display = "none";
     suggestionBox.innerHTML = "";
@@ -218,8 +206,7 @@ function selectSuggestion(text) {
   input.value = text;
   clearBtn.classList.add("show");
   fadeOutSuggestions();
-  input.blur();
-  searchSongs();
+  searchSongs(); // ✅ Removed input.blur() to allow TV remote
 }
 
 /* ===============================
@@ -231,7 +218,6 @@ function searchSongs() {
 
   isTyping = false;
   fadeOutSuggestions();
-  input.blur();
 
   const query = text.toLowerCase().includes("karaoke") ? text : text + " karaoke";
 
@@ -248,7 +234,6 @@ function showResults(videos) {
   results.innerHTML = "";
   if (!videos.length) return;
 
-  // Auto-play first video
   playOrQueue(videos[0].id.videoId, videos[0].snippet.title);
 
   videos.slice(1).forEach(v => {
@@ -270,17 +255,13 @@ function showResults(videos) {
 ================================ */
 function ensurePlayerReady(cb) {
   if (player && window.YT && YT.Player) return cb();
-
   if (playerInitializing) return setTimeout(() => ensurePlayerReady(cb), 200);
   if (!window.YT || !YT.Player) return setTimeout(() => ensurePlayerReady(cb), 300);
 
   playerInitializing = true;
 
   player = new YT.Player("player", {
-    events: {
-      onStateChange: onPlayerStateChange,
-      onError: playNext
-    }
+    events: { onStateChange: onPlayerStateChange, onError: playNext }
   });
 
   setTimeout(() => {
