@@ -22,13 +22,14 @@ const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
 const voiceBtn = document.getElementById("voiceBtn");
+const playPauseBtn = document.getElementById("playPauseBtn");
 
 let recognition; // 🔑 Make recognition accessible globally
 
 /* ===============================
    HELPERS
 ================================ */
-function truncate(text, max = 35) {
+function truncate(text, max = 40) {
   return text.length > max ? text.slice(0, max - 3) + "..." : text;
 }
 
@@ -124,6 +125,25 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   voiceBtn.disabled = true;
   voiceBtn.title = "Voice search not supported on this device";
 }
+
+/* ===============================
+   PLAY AND PAUSE 
+================================ */
+
+playPauseBtn.addEventListener("click", () => {
+  if (!player) return;
+
+  const state = player.getPlayerState();
+  // YT.PlayerState.PLAYING === 1, PAUSED === 2
+  if (state === 1) { 
+    player.pauseVideo();
+    playPauseBtn.textContent = "▶️"; // show play icon
+  } else {
+    player.playVideo();
+    playPauseBtn.textContent = "⏸"; // show pause icon
+  }
+});
+
 
 /* ===============================
    CLEAR INPUT ONLY
