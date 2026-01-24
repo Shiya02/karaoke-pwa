@@ -39,7 +39,7 @@ if ("serviceWorker" in navigator) {
   ================================= -->
   <div class="below-video">
 
-      <!-- 🔍 SEARCH -->
+    <!-- 🔍 SEARCH -->
     <div class="card section search-section">
       <h3 class="section-title">🔍 Search Song</h3>
 
@@ -55,7 +55,7 @@ if ("serviceWorker" in navigator) {
           <button
             id="clearSearch"
             class="clear-btn"
-            onclick="clearSearch()"
+            onclick="clearInputOnly()"
             aria-label="Clear search"
           >✕</button>
 
@@ -65,6 +65,13 @@ if ("serviceWorker" in navigator) {
             onclick="searchSongs()"
             aria-label="Search"
           >🔍</button>
+
+          <!-- Voice -->
+          <button
+            id="voiceBtn"
+            class="voice-btn"
+            aria-label="Voice search"
+          >🎤</button>
         </div>
 
         <!-- Dropdown suggestions -->
@@ -74,6 +81,7 @@ if ("serviceWorker" in navigator) {
       <!-- Results -->
       <div id="results" class="results-scroll"></div>
     </div>
+
 
 
     <!-- ⏭ UP NEXT -->
