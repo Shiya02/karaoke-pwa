@@ -1,6 +1,9 @@
-self.addEventListener("install", e => {
+const CACHE_NAME = "karaoke-v2"; // 🔁 CHANGE THIS ON EVERY UPDATE
+
+self.addEventListener("install", (e) => {
+  self.skipWaiting();
   e.waitUntil(
-    caches.open("karaoke-v1").then(cache =>
+    caches.open(CACHE_NAME).then((cache) =>
       cache.addAll([
         "./",
         "./index.html",
@@ -11,8 +14,23 @@ self.addEventListener("install", e => {
   );
 });
 
-self.addEventListener("fetch", e => {
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (e) => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
