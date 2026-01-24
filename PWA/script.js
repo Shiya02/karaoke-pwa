@@ -51,39 +51,6 @@ input.addEventListener("input", () => {
 
 
 
-playPauseBtn.addEventListener("click", () => {
-  if (!player) return;
-
-  const state = player.getPlayerState();
-  // YT.PlayerState.PLAYING === 1, PAUSED === 2
-  if (state === 1) { 
-    player.pauseVideo();
-    playPauseBtn.textContent = "▶️"; // show play icon
-  } else {
-    player.playVideo();
-    playPauseBtn.textContent = "⏸"; // show pause icon
-  }
-});
-
-// Optional: update button automatically when video ends or loads
-function updatePlayPauseBtn() {
-  if (!player) return;
-  const state = player.getPlayerState();
-  if (state === 1) {
-    playPauseBtn.textContent = "⏸";
-  } else {
-    playPauseBtn.textContent = "▶️";
-  }
-}
-
-// Listen for state changes to sync button
-function onPlayerStateChange(e) {
-  if (e.data === YT.PlayerState.ENDED) {
-    playNext();
-  }
-  updatePlayPauseBtn();
-}
-
 
 /* ===============================
    KEYBOARD HANDLING
