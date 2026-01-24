@@ -50,8 +50,6 @@ input.addEventListener("input", () => {
 });
 
 
-
-
 /* ===============================
    KEYBOARD HANDLING
 ================================ */
