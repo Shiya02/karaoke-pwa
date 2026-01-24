@@ -1,6 +1,10 @@
 const API_KEY = "AIzaSyCSggH0GxbXpv4gxqWiWl3YEb3arkBaRXI";
 
+/* ===============================
+   STATE
+================================ */
 let player = null;
+let playerInitializing = false;
 let currentVideo = null;
 let queue = [];
 
@@ -9,15 +13,26 @@ let activeIndex = -1;
 let debounceTimer = null;
 let isTyping = false;
 
+/* ===============================
+   ELEMENTS
+================================ */
 const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
+
+/* ===============================
+   HELPERS
+================================ */
+function truncate(text, max = 35) {
+  return text.length > max ? text.slice(0, max - 3) + "..." : text;
+}
 
 /* ===============================
    INPUT
 ================================ */
 input.addEventListener("input", () => {
   clearTimeout(debounceTimer);
+
   const q = input.value.trim();
   activeIndex = -1;
   isTyping = true;
@@ -45,8 +60,9 @@ input.addEventListener("keydown", (e) => {
     e.preventDefault();
     isTyping = false;
     fadeOutSuggestions();
-    input.blur(); // 📱 mobile keyboard closes
-    if (activeIndex >= 0) {
+    input.blur();
+
+    if (activeIndex >= 0 && suggestions[activeIndex]) {
       selectSuggestion(suggestions[activeIndex]);
     } else {
       searchSongs();
@@ -67,7 +83,7 @@ input.addEventListener("keydown", (e) => {
 });
 
 /* ===============================
-   CLOSE DROPDOWN ON OUTSIDE CLICK
+   CLOSE DROPDOWN
 ================================ */
 document.addEventListener("click", (e) => {
   if (
@@ -86,7 +102,20 @@ function clearSearch() {
   clearBtn.classList.remove("show");
   fadeOutSuggestions();
   document.getElementById("results").innerHTML = "";
+
+  // ✅ RESET PLAYER STATE
+  currentVideo = null;
+  queue = [];
+  updateQueue();
+  updateUpNext();
+
+  if (player) {
+    player.stopVideo();
+  }
+
+  document.getElementById("skipBtn").disabled = true;
 }
+
 
 /* ===============================
    JSONP SUGGESTIONS
@@ -116,20 +145,22 @@ window.handleSuggestions = function (data) {
 };
 
 /* ===============================
-   RENDER DROPDOWN
+   RENDER SUGGESTIONS
 ================================ */
 function renderSuggestions() {
   suggestionBox.innerHTML = "";
-  if (!suggestions.length) return fadeOutSuggestions();
+
+  if (!suggestions.length) {
+    fadeOutSuggestions();
+    return;
+  }
 
   suggestions.forEach((text, i) => {
     const div = document.createElement("div");
     div.className =
       "suggestion-item" + (i === activeIndex ? " active" : "");
     div.textContent = text;
-
     div.onclick = () => selectSuggestion(text);
-
     suggestionBox.appendChild(div);
   });
 
@@ -138,9 +169,11 @@ function renderSuggestions() {
 }
 
 /* ===============================
-   FADE OUT DROPDOWN (SMOOTH)
+   FADE OUT
 ================================ */
 function fadeOutSuggestions() {
+  if (suggestionBox.style.display !== "block") return;
+
   suggestionBox.style.opacity = "0";
 
   setTimeout(() => {
@@ -159,7 +192,7 @@ function selectSuggestion(text) {
   input.value = text;
   clearBtn.classList.add("show");
   fadeOutSuggestions();
-  input.blur(); // 📱 close keyboard
+  input.blur();
   searchSongs();
 }
 
@@ -172,11 +205,15 @@ function searchSongs() {
 
   isTyping = false;
   fadeOutSuggestions();
-  input.blur(); // 📱 close keyboard
+  input.blur();
+
+  const query = text.toLowerCase().includes("karaoke")
+    ? text
+    : text + " karaoke";
 
   fetch(
     `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=5&q=${encodeURIComponent(
-      text + " karaoke"
+      query
     )}&key=${API_KEY}`
   )
     .then(res => res.json())
@@ -191,18 +228,21 @@ function showResults(videos) {
   results.innerHTML = "";
   if (!videos.length) return;
 
-  // 🔥 AUTO-PLAY FIRST
-  playOrQueue(videos[0].id.videoId, videos[0].snippet.title);
+  playOrQueue(
+    videos[0].id.videoId,
+    truncate(videos[0].snippet.title)
+  );
 
   videos.slice(1).forEach(v => {
     const row = document.createElement("div");
     row.className = "result-item";
 
-    row.innerHTML = `<span>${v.snippet.title}</span>`;
+    row.innerHTML = `<span>${truncate(v.snippet.title)}</span>`;
 
     const btn = document.createElement("button");
     btn.textContent = "Add";
-    btn.onclick = () => playOrQueue(v.id.videoId, v.snippet.title);
+    btn.onclick = () =>
+      playOrQueue(v.id.videoId, truncate(v.snippet.title));
 
     row.appendChild(btn);
     results.appendChild(row);
@@ -214,8 +254,16 @@ function showResults(videos) {
 ================================ */
 function ensurePlayerReady(cb) {
   if (player && window.YT && YT.Player) return cb();
-  if (!window.YT || !YT.Player)
+
+  if (playerInitializing) {
+    return setTimeout(() => ensurePlayerReady(cb), 200);
+  }
+
+  if (!window.YT || !YT.Player) {
     return setTimeout(() => ensurePlayerReady(cb), 300);
+  }
+
+  playerInitializing = true;
 
   player = new YT.Player("player", {
     events: {
@@ -224,7 +272,10 @@ function ensurePlayerReady(cb) {
     }
   });
 
-  setTimeout(cb, 400);
+  setTimeout(() => {
+    playerInitializing = false;
+    cb();
+  }, 400);
 }
 
 function playOrQueue(videoId, title) {
@@ -266,6 +317,7 @@ function playNext() {
 function updateQueue() {
   const ul = document.getElementById("queue");
   ul.innerHTML = "";
+
   queue.forEach(q => {
     const li = document.createElement("li");
     li.textContent = q.title;
