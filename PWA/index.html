@@ -21,17 +21,13 @@ if ("serviceWorker" in navigator) {
      APP CONTAINER
 ================================= -->
 <div class="app-container">
- 
   <!-- 🎥 VIDEO -->
   <div class="card video-card">
     <div class="video-wrapper">
       <div id="player"></div>
     </div>
 
-    <div class="host-controls">
-      <button class="primary" id="skipBtn" onclick="skipSong()">⏭ Skip</button>
-      <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
-    </div>
+
 
         <!-- ⏭ UP NEXT -->
     <div class="card section">
@@ -45,8 +41,17 @@ if ("serviceWorker" in navigator) {
   ================================= -->
   <div class="below-video">
 
+  <div class="card section search-section">
+    <div class="host-controls">
+      <button class="playPauseBtn" id="playPauseBtn">▶️</button>
+      <button class="primary" id="skipBtn" onclick="skipSong()">⏭ Skip</button>
+      <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
+    </div>
+  </div>
+
 <!-- 🔍 SEARCH -->
 <div class="card section search-section">
+
   <h3 class="section-title">🔍 Search Song</h3>
 
   <div class="search-container">
