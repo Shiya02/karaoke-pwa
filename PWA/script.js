@@ -22,8 +22,6 @@ const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
 const voiceBtn = document.getElementById("voiceBtn");
-const playPauseBtn = document.getElementById("playPauseBtn");
-
 
 let recognition; // 🔑 Make recognition accessible globally
 
@@ -48,7 +46,6 @@ input.addEventListener("input", () => {
 
   debounceTimer = setTimeout(() => loadSuggestions(q), 200);
 });
-
 
 /* ===============================
    KEYBOARD HANDLING
