@@ -112,10 +112,9 @@ function clearSearch() {
   if (player) {
     player.stopVideo();
   }
-
   document.getElementById("skipBtn").disabled = true;
 }
-
+ 
 
 /* ===============================
    JSONP SUGGESTIONS
