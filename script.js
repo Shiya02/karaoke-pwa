@@ -32,8 +32,6 @@ let activeIndex = -1;
 let debounceTimer = null;
 let isTyping = false;
 
-let userUnlockedPlayback = false;
-const isTV = /TV|SmartTV|Tizen|WebOS|Android TV/i.test(navigator.userAgent);
 
 /* ===============================
    ELEMENTS
@@ -42,20 +40,8 @@ const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
 const voiceBtn = document.getElementById("voiceBtn");
-const playPauseBtn = document.getElementById("playPauseBtn");
 
-let recognition;
-
-
-/* ===============================
-   API KEY
-================================ */
-
-function getRandomApiKey() {
-  return API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
-}
-
-
+let recognition; // 🔑 Make recognition accessible globally
 
 /* ===============================
    HELPERS
@@ -63,18 +49,6 @@ function getRandomApiKey() {
 function truncate(text, max = 40) {
   return text.length > max ? text.slice(0, max - 3) + "..." : text;
 }
-
-/* ===============================
-   UNLOCK PLAYBACK (TV REQUIREMENT)
-================================ */
-function unlockPlayback() {
-  if (!player || userUnlockedPlayback) return;
-  userUnlockedPlayback = true;
-  player.playVideo();
-}
-
-document.addEventListener("click", unlockPlayback, { once: true });
-document.addEventListener("keydown", unlockPlayback, { once: true });
 
 /* ===============================
    INPUT EVENTS
@@ -87,6 +61,7 @@ input.addEventListener("input", () => {
   clearBtn.classList.toggle("show", q.length > 0);
 
   if (!q) return fadeOutSuggestions();
+
   debounceTimer = setTimeout(() => loadSuggestions(q), 200);
 });
 
@@ -106,13 +81,24 @@ input.addEventListener("keydown", (e) => {
     } else {
       searchSongs();
     }
+    return;
   }
 
   if (!suggestions.length) return;
+
   if (e.key === "ArrowDown") activeIndex = (activeIndex + 1) % suggestions.length;
   if (e.key === "ArrowUp") activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
 
   renderSuggestions();
+});
+
+/* ===============================
+   CLOSE DROPDOWN ON OUTSIDE CLICK
+================================ */
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".search-container") && suggestionBox.style.display === "block") {
+    fadeOutSuggestions();
+  }
 });
 
 /* ===============================
@@ -122,44 +108,69 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SpeechRecognition();
   recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
 
   voiceBtn.addEventListener("click", () => {
     recognition.start();
     voiceBtn.textContent = "🎤 Listening...";
   });
 
-  recognition.onresult = (e) => {
-    input.value = e.results[0][0].transcript.trim();
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    if (!transcript) {
+      voiceBtn.textContent = "🎤";
+      return;
+    }
+
+    input.value = transcript;
     clearBtn.classList.add("show");
-    setTimeout(searchSongs, 100);
+
+    // ✅ Slight delay to ensure input updates before search
+    setTimeout(() => searchSongs(), 100);
   };
 
-  recognition.onend = () => voiceBtn.textContent = "🎤";
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    voiceBtn.textContent = "🎤";
+  };
+
+  recognition.onend = () => {
+    voiceBtn.textContent = "🎤";
+  };
 } else {
   voiceBtn.disabled = true;
+  voiceBtn.title = "Voice search not supported on this device";
 }
 
 /* ===============================
-   PLAY / PAUSE BUTTON (TV SAFE)
+   CLEAR INPUT ONLY
 ================================ */
-playPauseBtn.addEventListener("click", () => {
-  if (!player) return;
+function clearInputOnly() {
+  input.value = "";
+  clearBtn.classList.remove("show");
+  fadeOutSuggestions();
+  document.getElementById("results").innerHTML = "";
+}
 
-  if (isTV) {
-    player.playVideo();
-    playPauseBtn.textContent = "⏸";
-    return;
-  }
+/* ===============================
+   FULL RESET
+================================ */
+function clearSearch() {
+  input.value = "";
+  clearBtn.classList.remove("show");
+  fadeOutSuggestions();
+  document.getElementById("results").innerHTML = "";
 
-  const state = player.getPlayerState();
-  if (state === YT.PlayerState.PLAYING) {
-    player.pauseVideo();
-    playPauseBtn.textContent = "▶️";
-  } else {
-    player.playVideo();
-    playPauseBtn.textContent = "⏸";
-  }
-});
+  currentVideo = null;
+  currentTitle = "";
+  queue = [];
+  updateQueue();
+  updateUpNext();
+
+  if (player) player.stopVideo();
+  document.getElementById("skipBtn").disabled = true;
+}
 
 /* ===============================
    SUGGESTIONS
@@ -171,10 +182,11 @@ function loadSuggestions(query) {
   const s = document.createElement("script");
   s.id = "jsonp";
   s.src = `https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&callback=handleSuggestions&q=${encodeURIComponent(query)}`;
+
   document.body.appendChild(s);
 }
 
-window.handleSuggestions = (data) => {
+window.handleSuggestions = function (data) {
   if (!isTyping) return;
   suggestions = (data[1] || []).map(i => Array.isArray(i) ? i[0] : i).slice(0, 7);
   renderSuggestions();
@@ -197,6 +209,8 @@ function renderSuggestions() {
 }
 
 function fadeOutSuggestions() {
+  if (suggestionBox.style.display !== "block") return;
+
   suggestionBox.style.opacity = "0";
   setTimeout(() => {
     suggestionBox.style.display = "none";
@@ -211,15 +225,18 @@ function selectSuggestion(text) {
   input.value = text;
   clearBtn.classList.add("show");
   fadeOutSuggestions();
-  searchSongs();
+  searchSongs(); // ✅ Removed input.blur() to allow TV remote
 }
 
 /* ===============================
-   SEARCH
+   SEARCH SONGS
 ================================ */
 function searchSongs() {
   const text = input.value.trim();
   if (!text) return;
+
+  isTyping = false;
+  fadeOutSuggestions();
 
   const query = text.toLowerCase().includes("karaoke") ? text : text + " karaoke";
 
@@ -229,7 +246,7 @@ function searchSongs() {
 }
 
 /* ===============================
-   RESULTS
+   SHOW RESULTS
 ================================ */
 function showResults(videos) {
   const results = document.getElementById("results");
@@ -263,7 +280,7 @@ function ensurePlayerReady(cb) {
   playerInitializing = true;
 
   player = new YT.Player("player", {
-    events: { onStateChange: onPlayerStateChange }
+    events: { onStateChange: onPlayerStateChange, onError: playNext }
   });
 
   setTimeout(() => {
@@ -273,7 +290,7 @@ function ensurePlayerReady(cb) {
 }
 
 /* ===============================
-   PLAY / QUEUE (TV FIXED)
+   PLAY / QUEUE
 ================================ */
 function playOrQueue(videoId, title) {
   const shortTitle = truncate(title);
@@ -282,14 +299,7 @@ function playOrQueue(videoId, title) {
     if (!currentVideo) {
       currentVideo = videoId;
       currentTitle = shortTitle;
-
-      if (isTV) {
-        player.cueVideoById(videoId);
-        setTimeout(() => player.playVideo(), 300);
-      } else {
-        player.loadVideoById(videoId);
-      }
-
+      player.loadVideoById(videoId);
       document.getElementById("skipBtn").disabled = false;
     } else {
       queue.push({ videoId, title: shortTitle });
@@ -301,9 +311,6 @@ function playOrQueue(videoId, title) {
 
 function onPlayerStateChange(e) {
   if (e.data === YT.PlayerState.ENDED) playNext();
-
-  if (e.data === YT.PlayerState.PLAYING) playPauseBtn.textContent = "⏸";
-  if (e.data === YT.PlayerState.PAUSED) playPauseBtn.textContent = "▶️";
 }
 
 function playNext() {
@@ -318,14 +325,7 @@ function playNext() {
   const next = queue.shift();
   currentVideo = next.videoId;
   currentTitle = next.title;
-
-  if (isTV) {
-    player.cueVideoById(next.videoId);
-    setTimeout(() => player.playVideo(), 300);
-  } else {
-    player.loadVideoById(next.videoId);
-  }
-
+  player.loadVideoById(next.videoId);
   updateQueue();
   updateUpNext();
 }
@@ -360,12 +360,4 @@ function clearQueue() {
   queue = [];
   updateQueue();
   updateUpNext();
-}
-
-function clearInputOnly() {
-  input.value = "";
-  clearBtn.classList.remove("show");
-  fadeOutSuggestions();
-  document.getElementById("results").innerHTML = "";
-  input.focus();
 }
