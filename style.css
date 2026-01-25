@@ -247,23 +247,13 @@ body {
 }
 
 button.playPauseBtn {
-  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
-  color: #fff;
-  border-radius: 999px;
-  padding: 14px 22px;
-  min-width: 140px;
-  font-size: 18px;
-  font-weight: 600;
-
-  box-shadow:
-    0 10px 26px rgba(139, 92, 246, 0.45),
-    inset 0 1px 0 rgba(255,255,255,0.25);
-}
-
-button.playPauseBtn {
-  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
-  box-shadow:
-    0 10px 26px rgba(59, 130, 246, 0.45);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  flex: 1 1 auto;
+  min-width: 120px;
 }
 
 
