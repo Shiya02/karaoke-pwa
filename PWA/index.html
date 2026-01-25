@@ -28,11 +28,6 @@ if ("serviceWorker" in navigator) {
       <div id="player"></div>
     </div>
 
-    <div class="host-controls">
-      <button class="primary" id="skipBtn" onclick="skipSong()">⏭ Skip</button>
-      <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
-    </div>
-
         <!-- ⏭ UP NEXT -->
     <div class="card section">
       <h3 class="section-title-upnext">⏭ Up Next</h3>
@@ -44,6 +39,11 @@ if ("serviceWorker" in navigator) {
        BELOW VIDEO: SEARCH & QUEUE
   ================================= -->
   <div class="below-video">
+
+    <div class="host-controls">
+      <button class="primary" id="skipBtn" onclick="skipSong()">⏭ Skip</button>
+      <button class="ghost" onclick="clearQueue()">🗑 Clear Queue</button>
+    </div>
 
 <!-- 🔍 SEARCH -->
 <div class="card section search-section">
