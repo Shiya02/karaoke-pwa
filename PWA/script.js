@@ -40,6 +40,7 @@ const input = document.getElementById("search");
 const suggestionBox = document.getElementById("suggestions");
 const clearBtn = document.getElementById("clearSearch");
 const voiceBtn = document.getElementById("voiceBtn");
+const playPauseBtn = document.getElementById("playPauseBtn");
 
 let recognition; // 🔑 Make recognition accessible globally
 
@@ -64,6 +65,30 @@ input.addEventListener("input", () => {
 
   debounceTimer = setTimeout(() => loadSuggestions(q), 200);
 });
+
+
+/* ===============================
+   PLAY PAUSE
+================================ */
+
+
+playPauseBtn.addEventListener("click", () => {
+  if (!player) return;
+
+  const state = player.getPlayerState();
+
+  // If playing → pause
+  if (state === YT.PlayerState.PLAYING) {
+    player.pauseVideo();
+    playPauseBtn.textContent = "▶️";
+    return;
+  }
+
+  // Force play for ALL other states
+  player.playVideo();
+  playPauseBtn.textContent = "⏸";
+});
+
 
 /* ===============================
    KEYBOARD HANDLING
