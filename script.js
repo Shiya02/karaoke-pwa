@@ -1,4 +1,22 @@
-const API_KEY = "AIzaSyCHV9kOJtGk54zmDeJRWIwv0FstrnYz70Y";
+const API_KEYS = [
+  "AIzaSyBWyFXBLNhRvlDYu-e3XLuhEtgOSIwBaFM",
+  "AIzaSyCHV9kOJtGk54zmDeJRWIwv0FstrnYz70Y",
+  "AIzaSyCBt5Fbj1Cqk2yI6WzQ74fsAc3YEacHM5M",
+  "AIzaSyCWGQGr_woo75TyIM7Qll0Nlq7jxMIqBHo",
+  "AIzaSyCOUj5cToyJEuoiEKBrlNLGFl-m984T838",
+  "AIzaSyBuopTFOPpTFu-T3Lp4gScbxAGSD7Nr-K8",
+  "AIzaSyAr7QFAoZ8q_BkTf86MvW3pDHipuBcUSpE",
+  "AIzaSyAuPiNxuC-bptSTexRvAwUqwoH767y7-s",
+  "AIzaSyDdYZeeCB96xQocVOOENFw6qSG-75Uell0",
+  "AIzaSyB1MrOR3eiA-tjF3BlTXNqqTaEiDK70AfY",
+  "AIzaSyDfOaai0txbJKjE_4i62cWv1OW5gQeKzFE",
+  " AIzaSyAPpERvXMYwI-0fB2DvZ_u5KozemB6WIfU",
+  "AIzaSyCfBDgS6ZinFTKxVvX3H1cgiliZhrZrv0g",
+  "AIzaSyCHV9kOJtGk54zmDeJRWIwv0FstrnYz70Y",
+  "AIzaSyDsSylrGy-yhsoRj5DfwTVReCP1UPySOz8"
+];
+
+const API_KEY = API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
 
 /* ===============================
    STATE
@@ -27,6 +45,17 @@ const voiceBtn = document.getElementById("voiceBtn");
 const playPauseBtn = document.getElementById("playPauseBtn");
 
 let recognition;
+
+
+/* ===============================
+   API KEY
+================================ */
+
+function getRandomApiKey() {
+  return API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+}
+
+
 
 /* ===============================
    HELPERS
