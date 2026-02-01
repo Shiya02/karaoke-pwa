@@ -16,8 +16,6 @@ const API_KEYS = [
   "AIzaSyDsSylrGy-yhsoRj5DfwTVReCP1UPySOz8"
 ];
 
-const API_KEY = API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
-
 /* ===============================
    STATE
 ================================ */
@@ -256,18 +254,42 @@ function selectSuggestion(text) {
 /* ===============================
    SEARCH SONGS
 ================================ */
-function searchSongs() {
+function searchSongs(retryCount = 0, maxRetries = 3) {
   const text = input.value.trim();
   if (!text) return;
 
   isTyping = false;
   fadeOutSuggestions();
 
-  const query = text.toLowerCase().includes("karaoke") ? text : text + " karaoke";
+  const query = text.toLowerCase().includes("karaoke")
+    ? text
+    : text + " karaoke";
 
-  fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=5&q=${encodeURIComponent(query)}&key=${API_KEY}`)
-    .then(res => res.json())
-    .then(data => showResults(data.items || []));
+  const apiKey = API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=5&q=${encodeURIComponent(query)}&key=${apiKey}`;
+
+  fetch(url)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      showResults(data.items || []);
+    })
+    .catch(err => {
+      console.warn(`Search failed (attempt ${retryCount + 1})`, err);
+
+      if (retryCount < maxRetries) {
+        setTimeout(() => {
+          searchSongs(retryCount + 1, maxRetries);
+        }, 500); // small delay before retry
+      } else {
+        console.error("All retries failed.");
+        showResults([]); // or show an error message to user
+      }
+    });
 }
 
 /* ===============================
