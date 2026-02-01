@@ -1,4 +1,4 @@
-const CACHE_NAME = "karaoke-v13"; // 🔁 CHANGE THIS ON EVERY UPDATE
+const CACHE_NAME = "karaoke-v14"; // 🔁 CHANGE THIS ON EVERY UPDATE
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
